@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <math.h>
 
+// Donne le nombre de points selon la taille de la bulle (les petites valent plus)
 static int points_bulle(int taille)
 {
     if (taille == 2) return 50;
@@ -15,6 +16,7 @@ static int points_bulle(int taille)
     return 200;
 }
 
+// Place les bulles de depart selon le niveau (plus c'est dur, plus il y en a)
 void init_bulles_niveau(Bulle* b, int niveau)
 {
     int i;
@@ -28,10 +30,12 @@ void init_bulles_niveau(Bulle* b, int niveau)
     nb_meteores = 0;
     espacement_y = 400;
 
+    // On reset toutes les bulles
     for (i = 0; i < MAX_BULLES; i++) {
         b[i].active = 0;
     }
 
+    // Le nombre de bulles change selon le niveau
     if (niveau == 1) {
         nb_meteores = 8;
         espacement_y = 500;
@@ -45,10 +49,12 @@ void init_bulles_niveau(Bulle* b, int niveau)
         espacement_y = 380;
     }
 
+    // On boucle pour placer chaque bulle au-dessus de l'ecran
     for (i = 0; i < nb_meteores; i++) {
         pos_x = 50 + rand() % (LARGEUR - 100);
         pos_y = 80 - (i * espacement_y);
 
+        // 1 chance sur 3 d'avoir une bulle moyenne au lieu d'une grosse
         taille = 2;
         if (rand() % 3 == 0) {
             taille = 1;
@@ -61,6 +67,7 @@ void init_bulles_niveau(Bulle* b, int niveau)
     }
 }
 
+// Compte combien de bulles sont actives
 int compter_bulles(Bulle* b)
 {
     int i;
@@ -74,6 +81,7 @@ int compter_bulles(Bulle* b)
     return n;
 }
 
+// Met a jour la position des bulles avec rebond et gravite
 void bouger_bulles(Bulle* b)
 {
     int i;
@@ -82,12 +90,15 @@ void bouger_bulles(Bulle* b)
             b[i].x = b[i].x + b[i].vx;
             b[i].y = b[i].y + b[i].vy;
 
+            // Gravite : on augmente la vitesse vers le bas a chaque image
             b[i].vy = b[i].vy + 0.22;
 
+            // On limite la vitesse pour pas que ca aille trop vite
             if (b[i].vy > 12) {
                 b[i].vy = 12;
             }
 
+            // Rebond sur les murs gauche/droite
             if (b[i].x < 0) {
                 b[i].x = 0;
                 b[i].vx = -b[i].vx;
@@ -97,11 +108,13 @@ void bouger_bulles(Bulle* b)
                 b[i].vx = -b[i].vx;
             }
 
+            // Rebond sur le plafond
             if (b[i].y < PLAFOND && b[i].y > 0 && b[i].vy < 0) {
                 b[i].y = PLAFOND;
                 b[i].vy = -b[i].vy;
             }
 
+            // Rebond sur le sol : la hauteur du rebond depend de la taille
             if (b[i].y + b[i].ty > SOL) {
                 b[i].y = SOL - b[i].ty;
                 if (b[i].taille == 0) b[i].vy = -15;
@@ -112,6 +125,7 @@ void bouger_bulles(Bulle* b)
     }
 }
 
+// Fait monter les tirs et gere leur animation
 void bouger_tirs(Projectile* t)
 {
     int i;
@@ -119,6 +133,7 @@ void bouger_tirs(Projectile* t)
         if (t[i].active == 1) {
             t[i].y = t[i].y - 10;
 
+            // On change de frame tous les 3 ticks
             t[i].compteur = t[i].compteur + 1;
             if (t[i].compteur > 3) {
                 t[i].compteur = 0;
@@ -128,6 +143,7 @@ void bouger_tirs(Projectile* t)
                 }
             }
 
+            // Si le tir sort en haut on le desactive
             if (t[i].y < 0) {
                 t[i].active = 0;
             }
@@ -135,6 +151,7 @@ void bouger_tirs(Projectile* t)
     }
 }
 
+// Fait bouger les particules avec gravite et reduit leur duree de vie
 void bouger_particules(Particule* p)
 {
     int i;
@@ -151,6 +168,7 @@ void bouger_particules(Particule* p)
     }
 }
 
+// Fait monter les popups de score et reduit leur duree de vie
 void bouger_popups(PopupScore* p)
 {
     int i;
@@ -165,6 +183,7 @@ void bouger_popups(PopupScore* p)
     }
 }
 
+// Fait tomber les bonus, on les desactive s'ils sortent de l'ecran
 void bouger_bonus(Bonus* b)
 {
     int i;
@@ -178,6 +197,7 @@ void bouger_bonus(Bonus* b)
     }
 }
 
+// Fait avancer l'animation des explosions (3 frames)
 void bouger_explosions(Explosion* e)
 {
     int i;
@@ -195,6 +215,7 @@ void bouger_explosions(Explosion* e)
     }
 }
 
+// Bouge les tirs du boss avec rebond sur les bords
 void bouger_tirs_boss(TirBoss* t)
 {
     int i;
@@ -203,6 +224,7 @@ void bouger_tirs_boss(TirBoss* t)
             t[i].x = t[i].x + t[i].vx;
             t[i].y = t[i].y + t[i].vy;
 
+            // Rebond gauche/droite
             if (t[i].x < 0) {
                 t[i].x = 0;
                 t[i].vx = -t[i].vx;
@@ -212,6 +234,7 @@ void bouger_tirs_boss(TirBoss* t)
                 t[i].vx = -t[i].vx;
             }
 
+            // Si ca sort de l'ecran on desactive
             if (t[i].y > HAUTEUR) {
                 t[i].active = 0;
             }
@@ -219,6 +242,7 @@ void bouger_tirs_boss(TirBoss* t)
                 t[i].active = 0;
             }
 
+            // Animation
             t[i].compteur = t[i].compteur + 1;
             if (t[i].compteur > 5) {
                 t[i].compteur = 0;
@@ -231,6 +255,7 @@ void bouger_tirs_boss(TirBoss* t)
     }
 }
 
+// Donne la couleur d'une bulle pour l'effet d'explosion (en RGB)
 static void couleur_bulle(int c, int* r, int* g, int* bl)
 {
     if (c == 0) { *r = 230; *g = 80;  *bl = 80;  }
@@ -239,6 +264,7 @@ static void couleur_bulle(int c, int* r, int* g, int* bl)
     else { *r = 230; *g = 200; *bl = 60; }
 }
 
+// Gere les collisions tir/bulle : explosion, score, division en bulles plus petites
 void gerer_collisions(Projectile* t, Bulle* b, Particule* part,
                       PopupScore* pop, Explosion* exp, Bonus* bons,
                       int* score, int* combo, int* tick_combo)
@@ -249,6 +275,7 @@ void gerer_collisions(Projectile* t, Bulle* b, Particule* part,
     int gain;
     int r, g, bl;
 
+    // On boucle sur tous les tirs et toutes les bulles pour tester les collisions
     for (i = 0; i < MAX_TIRS; i++) {
         if (t[i].active == 1) {
             for (j = 0; j < MAX_BULLES; j++) {
@@ -256,6 +283,7 @@ void gerer_collisions(Projectile* t, Bulle* b, Particule* part,
                     if (collision_tir_bulle(&t[i], &b[j]) == 1) {
                         t[i].active = 0;
 
+                        // On garde les infos de la bulle avant de la desactiver
                         x = (int)b[j].x + b[j].tx / 2;
                         y = (int)b[j].y + b[j].ty / 2;
                         tx = b[j].tx;
@@ -264,15 +292,18 @@ void gerer_collisions(Projectile* t, Bulle* b, Particule* part,
 
                         b[j].active = 0;
 
+                        // Combo : a chaque bulle cassee on monte le multiplicateur
                         *combo = *combo + 1;
                         if (*combo > 10) *combo = 10;
                         *tick_combo = 90;
 
+                        // Le gain depend de la taille et du combo
                         gain = points_bulle(taille) * (*combo);
                         *score = *score + gain;
 
                         ajouter_popup(pop, x, y, gain);
 
+                        // Effet visuel : explosion + particules de la bonne couleur
                         couleur_bulle(couleur, &r, &g, &bl);
                         exploser_particules(part, x, y, r, g, bl);
 
@@ -280,10 +311,12 @@ void gerer_collisions(Projectile* t, Bulle* b, Particule* part,
 
                         declencher_shake(2);
 
+                        // 1 chance sur 6 de faire tomber un bonus
                         if (rand() % 6 == 0) {
                             ajouter_bonus(bons, x - 25, y, rand() % 2);
                         }
 
+                        // La bulle se divise en 2 (grosse) ou 3 (moyenne) plus petites
                         if (taille == 2) {
                             ajouter_bulle(b, x - 10, y, 1, 0, couleur);
                             ajouter_bulle(b, x + 10, y, 1, 1, couleur);
@@ -293,6 +326,7 @@ void gerer_collisions(Projectile* t, Bulle* b, Particule* part,
                             ajouter_bulle(b, x + 15, y, 0, 1, couleur);
                         }
 
+                        // Important : on sort de la boucle des bulles pour pas casser plusieurs bulles avec un seul tir
                         break;
                     }
                 }
@@ -301,6 +335,7 @@ void gerer_collisions(Projectile* t, Bulle* b, Particule* part,
     }
 }
 
+// Gere ce qui se passe quand le joueur attrape un bonus
 void gerer_bonus_collecte(Bonus* bons, Joueur* j, Bulle* bulles,
                           Particule* part, Explosion* exp,
                           PopupScore* pop, int* score)
@@ -315,16 +350,19 @@ void gerer_bonus_collecte(Bonus* bons, Joueur* j, Bulle* bulles,
                 type = bons[i].type;
                 bons[i].active = 0;
 
+                // Bonus type 0 : double tir pendant 600 ticks
                 if (type == 0) {
                     j->bonus_type = 1;
                     j->bonus_timer = 600;
                     ajouter_popup(pop, j->x + j->tx / 2, j->y, 50);
                     *score = *score + 50;
+                // Bonus type 1 : triple tir pendant 600 ticks
                 } else if (type == 1) {
                     j->bonus_type = 2;
                     j->bonus_timer = 600;
                     ajouter_popup(pop, j->x + j->tx / 2, j->y, 100);
                     *score = *score + 100;
+                // Bonus type BOOM : detruit toutes les bulles a l'ecran
                 } else {
                     for (k = 0; k < MAX_BULLES; k++) {
                         if (bulles[k].active == 1) {
@@ -344,6 +382,7 @@ void gerer_bonus_collecte(Bonus* bons, Joueur* j, Bulle* bulles,
     }
 }
 
+// Bouge le boss avec un mouvement sinusoidal et le fait tirer regulierement
 void bouger_boss(Boss* b, Bulle* bulles, TirBoss* tirs_boss)
 {
     float old_x;
@@ -354,24 +393,29 @@ void bouger_boss(Boss* b, Bulle* bulles, TirBoss* tirs_boss)
 
     old_x = b->x;
 
+    // Plus le boss perd de vie, plus il bouge vite
     vitesse_facteur = 0.02 + (float)(b->vie_max - b->vie) * 0.005;
 
     amplitude = LARGEUR / 2 - b->tx / 2 - 60;
 
+    // Mouvement avec sin/cos pour faire un deplacement fluide
     b->compteur = b->compteur + 1;
     b->x = (LARGEUR / 2 - b->tx / 2) + amplitude * sin(b->compteur * vitesse_facteur);
     b->y = 100 + (int)(30 * sin(b->compteur * 0.04));
 
+    // On regarde dans quelle direction le boss bouge pour choisir le bon sprite
     if (b->x > old_x) {
         b->direction = 0;
     } else if (b->x < old_x) {
         b->direction = 1;
     }
 
+    // Le boss tire toutes les 60 frames
     b->compteur_tir = b->compteur_tir + 1;
     if (b->compteur_tir > 60) {
         ajouter_tir_boss(tirs_boss, (int)b->x + b->tx / 2 - 17, (int)b->y + b->ty);
         b->compteur_tir = 0;
+        // 1 chance sur 3 de cracher une bulle en plus
         if (rand() % 3 == 0) {
             ajouter_bulle(bulles, (int)b->x + b->tx / 2 - 20,
                           (int)b->y + b->ty, 1, rand() % 2, rand() % 4);
@@ -381,6 +425,7 @@ void bouger_boss(Boss* b, Bulle* bulles, TirBoss* tirs_boss)
     if (b->touche > 0) b->touche = b->touche - 1;
 }
 
+// Affiche le joueur mort pendant 150 frames avant de finir le niveau
 static void sequence_mort(Joueur* j, int niveau, char* pseudo, int score, int temps,
                           Bulle* bulles, Etoile* etoiles, Boss* boss, int est_boss)
 {
@@ -404,6 +449,7 @@ static void sequence_mort(Joueur* j, int niveau, char* pseudo, int score, int te
     }
 }
 
+// Boucle principale d'un niveau (1, 2 ou 3)
 int jouer_niveau(char* pseudo, int niveau, int* score)
 {
     Joueur joueur;
@@ -425,6 +471,7 @@ int jouer_niveau(char* pseudo, int niveau, int* score)
     int bonus_temps;
     int compteur_bonus;
 
+    // Init de tous les objets du niveau
     init_joueur(&joueur);
     bulles = creer_bulles();
     tirs = creer_tirs();
@@ -444,6 +491,7 @@ int jouer_niveau(char* pseudo, int niveau, int* score)
     tick_combo = 0;
     compteur_bonus = 0;
 
+    // Petit decompte 3, 2, 1 avant le debut
     for (i = 3; i > 0; i--) {
         afficher_fond(niveau, etoiles);
         afficher_hud(pseudo, *score, temps, niveau, 1);
@@ -454,11 +502,14 @@ int jouer_niveau(char* pseudo, int niveau, int* score)
         rest(700);
     }
 
+    // Boucle principale du jeu : tant que pas gagne, pas perdu, pas echap
     while (!key[KEY_ESC] && gagne == 0 && perdu == 0) {
+        // 1) Gestion des entrees clavier
         deplacer_joueur(&joueur);
         gerer_saut(&joueur);
         gerer_tir(&joueur, tirs);
 
+        // 2) On bouge tous les objets
         bouger_bulles(bulles);
         bouger_tirs(tirs);
         bouger_particules(particules);
@@ -466,11 +517,13 @@ int jouer_niveau(char* pseudo, int niveau, int* score)
         bouger_bonus(bons);
         bouger_explosions(explos);
 
+        // 3) Collisions tirs/bulles
         gerer_collisions(tirs, bulles, particules, popups, explos, bons,
                          score, &combo, &tick_combo);
 
         gerer_bonus_collecte(bons, &joueur, bulles, particules, explos, popups, score);
 
+        // Decompte du timer du bonus
         if (joueur.bonus_timer > 0) {
             joueur.bonus_timer = joueur.bonus_timer - 1;
             if (joueur.bonus_timer == 0) {
@@ -480,18 +533,21 @@ int jouer_niveau(char* pseudo, int niveau, int* score)
         if (joueur.invincibilite > 0) {
             joueur.invincibilite = joueur.invincibilite - 1;
         }
+        // De temps en temps on fait apparaitre un bonus
         compteur_bonus = compteur_bonus + 1;
         if (compteur_bonus > 240 && rand() % 60 == 0) {
             ajouter_bonus(bons, rand() % (LARGEUR - 50), 0, rand() % 2);
             compteur_bonus = 0;
         }
 
+        // Si on tarde trop a casser une bulle le combo retombe a 0
         if (tick_combo > 0) {
             tick_combo = tick_combo - 1;
         } else {
             combo = 0;
         }
 
+        // On verifie si une bulle touche le joueur (s'il n'est pas invincible)
         for (i = 0; i < MAX_BULLES; i++) {
             if (bulles[i].active == 1) {
                 if (collision_bulle_joueur(&bulles[i], &joueur) == 1 && joueur.invincibilite == 0) {
@@ -509,10 +565,12 @@ int jouer_niveau(char* pseudo, int niveau, int* score)
             }
         }
 
+        // Si plus aucune bulle, on a gagne
         if (compter_bulles(bulles) == 0) {
             gagne = 1;
         }
 
+        // Le timer descend de 1 chaque seconde (60 ticks)
         compteur_temps = compteur_temps + 1;
         if (compteur_temps >= 60) {
             temps = temps - 1;
@@ -522,6 +580,7 @@ int jouer_niveau(char* pseudo, int niveau, int* score)
             perdu = 1;
         }
 
+        // 4) On dessine tout
         afficher_fond(niveau, etoiles);
         afficher_bulles(bulles, niveau);
         afficher_bonus(bons);
@@ -539,6 +598,7 @@ int jouer_niveau(char* pseudo, int niveau, int* score)
         sequence_mort(&joueur, niveau, pseudo, *score, temps, bulles, etoiles, NULL, 0);
     }
 
+    // Si on a gagne, on donne un bonus de temps en points
     if (gagne == 1) {
         joueur.invincibilite = 0;
         bonus_temps = temps * 50;
@@ -566,6 +626,7 @@ int jouer_niveau(char* pseudo, int niveau, int* score)
 
     if (key[KEY_ESC]) echap = 1;
 
+    // On libere toute la memoire allouee
     detruire_bulles(bulles);
     detruire_tirs(tirs);
     detruire_particules(particules);
@@ -579,6 +640,7 @@ int jouer_niveau(char* pseudo, int niveau, int* score)
     return 0;
 }
 
+// Boucle principale du combat contre le boss (niveau 4)
 int jouer_boss(char* pseudo, int* score)
 {
     Joueur joueur;
@@ -602,6 +664,7 @@ int jouer_boss(char* pseudo, int* score)
     int bonus_temps;
     int compteur_bonus;
 
+    // Init de tout
     init_joueur(&joueur);
     bulles = creer_bulles();
     tirs = creer_tirs();
@@ -623,6 +686,7 @@ int jouer_boss(char* pseudo, int* score)
     tick_combo = 0;
     compteur_bonus = 0;
 
+    // Decompte avant le combat
     for (i = 3; i > 0; i--) {
         afficher_fond(4, etoiles);
         afficher_hud(pseudo, *score, temps, 4, 1);
@@ -635,10 +699,12 @@ int jouer_boss(char* pseudo, int* score)
     }
 
     while (!key[KEY_ESC] && gagne == 0 && perdu == 0) {
+        // Entrees clavier
         deplacer_joueur(&joueur);
         gerer_saut(&joueur);
         gerer_tir(&joueur, tirs);
 
+        // On bouge tout
         bouger_boss(boss, bulles, tirs_boss);
         bouger_bulles(bulles);
         bouger_tirs(tirs);
@@ -672,6 +738,7 @@ int jouer_boss(char* pseudo, int* score)
             combo = 0;
         }
 
+        // On gere les tirs qui touchent le boss
         for (i = 0; i < MAX_TIRS; i++) {
             if (tirs[i].active == 1) {
                 if (collision_tir_boss(&tirs[i], boss) == 1) {
@@ -684,10 +751,12 @@ int jouer_boss(char* pseudo, int* score)
                     exploser_particules(particules, (int)boss->x + boss->tx / 2,
                                         (int)boss->y + boss->ty / 2, 255, 100, 200);
                     declencher_shake(5);
+                    // Si le boss n'a plus de vie, on a gagne
                     if (boss->vie <= 0) {
                         boss->active = 0;
                         gagne = 1;
                         *score = *score + 2000;
+                        // Plein d'explosions au hasard sur le boss pour faire un gros effet
                         for (j = 0; j < 5; j++) {
                             exploser_particules(particules,
                                 (int)boss->x + (rand() % boss->tx),
@@ -700,6 +769,7 @@ int jouer_boss(char* pseudo, int* score)
             }
         }
 
+        // Si le boss touche le joueur c'est mort direct
         if (collision_boss_joueur(boss, &joueur) == 1) {
             perdu = 1;
             declencher_shake(15);
@@ -707,6 +777,7 @@ int jouer_boss(char* pseudo, int* score)
                                 joueur.y + joueur.ty / 2, 255, 80, 80);
         }
 
+        // Pareil si une bulle touche le joueur
         for (i = 0; i < MAX_BULLES; i++) {
             if (bulles[i].active == 1) {
                 if (collision_bulle_joueur(&bulles[i], &joueur) == 1) {
@@ -718,6 +789,7 @@ int jouer_boss(char* pseudo, int* score)
             }
         }
 
+        // Si un tir du boss touche le joueur c'est mort
         for (i = 0; i < MAX_TIRS_BOSS; i++) {
             if (tirs_boss[i].active == 1) {
                 if (collision_tirboss_joueur(&tirs_boss[i], &joueur) == 1) {
@@ -730,6 +802,7 @@ int jouer_boss(char* pseudo, int* score)
             }
         }
 
+        // Decompte du temps
         compteur_temps = compteur_temps + 1;
         if (compteur_temps >= 60) {
             temps = temps - 1;
@@ -739,6 +812,7 @@ int jouer_boss(char* pseudo, int* score)
             perdu = 1;
         }
 
+        // Affichage de tout
         afficher_fond(4, etoiles);
         afficher_bulles(bulles, 4);
         afficher_bonus(bons);
@@ -759,6 +833,7 @@ int jouer_boss(char* pseudo, int* score)
         sequence_mort(&joueur, 4, pseudo, *score, temps, bulles, etoiles, boss, 1);
     }
 
+    // Animation de victoire avec plein de particules
     if (gagne == 1) {
         bonus_temps = temps * 100;
         *score = *score + bonus_temps;
@@ -776,6 +851,7 @@ int jouer_boss(char* pseudo, int* score)
                                   makecol(255, 220, 50), -1);
             }
             bouger_particules(particules);
+            // On fait apparaitre des particules un peu partout pour le show
             if (i % 3 == 0) {
                 exploser_particules(particules,
                     rand() % LARGEUR,
@@ -789,6 +865,7 @@ int jouer_boss(char* pseudo, int* score)
 
     if (key[KEY_ESC]) echap = 1;
 
+    // On libere toute la memoire
     detruire_bulles(bulles);
     detruire_tirs(tirs);
     detruire_particules(particules);
@@ -804,6 +881,7 @@ int jouer_boss(char* pseudo, int* score)
     return 0;
 }
 
+// Joue toute la partie : niveaux 1 a 3 puis le boss
 int jouer_partie(char* pseudo, int niveau_depart)
 {
     int niveau;
@@ -813,9 +891,11 @@ int jouer_partie(char* pseudo, int niveau_depart)
     niveau = niveau_depart;
     score = 0;
 
+    // On enchaine les niveaux 1, 2, 3
     while (niveau <= 3) {
         res = jouer_niveau(pseudo, niveau, &score);
         if (res == -1) return score;
+        // Si on perd : afficher defaite, sauvegarder, ajouter au top scores, et stop
         if (res == 0) {
             afficher_defaite(score);
             if (niveau > 1) sauvegarder(pseudo, niveau - 1);
@@ -826,6 +906,7 @@ int jouer_partie(char* pseudo, int niveau_depart)
         niveau = niveau + 1;
     }
 
+    // Apres les 3 niveaux on enchaine sur le boss
     res = jouer_boss(pseudo, &score);
     if (res == -1) {
         ajouter_score(pseudo, score);
@@ -838,6 +919,7 @@ int jouer_partie(char* pseudo, int niveau_depart)
         return score;
     }
 
+    // Si on bat le boss : sauvegarde au niveau 4 et affichage victoire
     sauvegarder(pseudo, 4);
     afficher_victoire(score);
     ajouter_score(pseudo, score);

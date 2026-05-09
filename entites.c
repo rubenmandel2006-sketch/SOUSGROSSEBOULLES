@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 
+// Met les valeurs de depart pour le joueur
 void init_joueur(Joueur* j)
 {
     j->x = LARGEUR / 2;
@@ -20,6 +21,7 @@ void init_joueur(Joueur* j)
     j->invincibilite = 0;
 }
 
+// Cree le tableau des bulles et met tout a inactif
 Bulle* creer_bulles(void)
 {
     Bulle* tab;
@@ -31,6 +33,7 @@ Bulle* creer_bulles(void)
     return tab;
 }
 
+// Cree le tableau des tirs
 Projectile* creer_tirs(void)
 {
     Projectile* tab;
@@ -46,6 +49,7 @@ Projectile* creer_tirs(void)
     return tab;
 }
 
+// Cree le tableau des particules
 Particule* creer_particules(void)
 {
     Particule* tab;
@@ -57,6 +61,7 @@ Particule* creer_particules(void)
     return tab;
 }
 
+// Cree le tableau des popups de score
 PopupScore* creer_popups(void)
 {
     PopupScore* tab;
@@ -68,6 +73,7 @@ PopupScore* creer_popups(void)
     return tab;
 }
 
+// Cree les etoiles du fond avec une position aleatoire
 Etoile* creer_etoiles(void)
 {
     Etoile* tab;
@@ -82,6 +88,7 @@ Etoile* creer_etoiles(void)
     return tab;
 }
 
+// Cree le boss (un seul donc pas de tableau)
 Boss* creer_boss(void)
 {
     Boss* b;
@@ -90,6 +97,7 @@ Boss* creer_boss(void)
     return b;
 }
 
+// Cree le tableau des bonus
 Bonus* creer_bonus(void)
 {
     Bonus* tab;
@@ -101,6 +109,7 @@ Bonus* creer_bonus(void)
     return tab;
 }
 
+// Cree le tableau des explosions
 Explosion* creer_explosions(void)
 {
     Explosion* tab;
@@ -112,6 +121,7 @@ Explosion* creer_explosions(void)
     return tab;
 }
 
+// Cree le tableau des tirs du boss
 TirBoss* creer_tirs_boss(void)
 {
     TirBoss* tab;
@@ -123,6 +133,7 @@ TirBoss* creer_tirs_boss(void)
     return tab;
 }
 
+// Petites fonctions qui liberent la memoire de chaque tableau
 void detruire_bulles(Bulle* b)         { free(b); }
 void detruire_tirs(Projectile* t)      { free(t); }
 void detruire_particules(Particule* p) { free(p); }
@@ -133,6 +144,7 @@ void detruire_bonus(Bonus* b)          { free(b); }
 void detruire_explosions(Explosion* e) { free(e); }
 void detruire_tirs_boss(TirBoss* t)    { free(t); }
 
+// Cherche une place libre dans le tableau et y met une nouvelle bulle
 void ajouter_bulle(Bulle* tab, int x, int y, int taille, int dir, int couleur)
 {
     int i;
@@ -143,9 +155,11 @@ void ajouter_bulle(Bulle* tab, int x, int y, int taille, int dir, int couleur)
             tab[i].y = y;
             tab[i].taille = taille;
             tab[i].couleur = couleur;
+            // La taille de l'image change selon le type de bulle
             if (taille == 0) { tab[i].tx = 60;  tab[i].ty = 60;  }
             if (taille == 1) { tab[i].tx = 120; tab[i].ty = 120; }
             if (taille == 2) { tab[i].tx = 180; tab[i].ty = 180; }
+            // Direction de depart : droite ou gauche
             if (dir == 0) {
                 tab[i].vx = 2.5;
             } else {
@@ -157,6 +171,7 @@ void ajouter_bulle(Bulle* tab, int x, int y, int taille, int dir, int couleur)
     }
 }
 
+// Ajoute un tir a la premiere place libre
 void ajouter_tir(Projectile* tab, int x, int y)
 {
     int i;
@@ -172,6 +187,7 @@ void ajouter_tir(Projectile* tab, int x, int y)
     }
 }
 
+// Cree 18 particules qui partent dans tous les sens
 void exploser_particules(Particule* tab, int x, int y, int r, int g, int b)
 {
     int i, n;
@@ -183,15 +199,19 @@ void exploser_particules(Particule* tab, int x, int y, int r, int g, int b)
             tab[i].active = 1;
             tab[i].x = x;
             tab[i].y = y;
+            // On choisit un angle au hasard pour que la particule parte dans une direction aleatoire
             angle = (rand() % 360) * 3.14159 / 180.0;
             vitesse = 2.0 + (rand() % 50) / 10.0;
+            // cos et sin pour transformer l'angle en vitesse x et y
             tab[i].vx = cos(angle) * vitesse;
             tab[i].vy = sin(angle) * vitesse;
             tab[i].vie = 30 + rand() % 25;
             tab[i].taille = 2 + rand() % 4;
+            // On varie un peu la couleur pour que ca fasse plus naturel
             tab[i].r = r + (rand() % 60) - 30;
             tab[i].g = g + (rand() % 60) - 30;
             tab[i].b = b + (rand() % 60) - 30;
+            // On s'assure que les couleurs restent entre 0 et 255
             if (tab[i].r < 0) tab[i].r = 0;
             if (tab[i].g < 0) tab[i].g = 0;
             if (tab[i].b < 0) tab[i].b = 0;
@@ -203,6 +223,7 @@ void exploser_particules(Particule* tab, int x, int y, int r, int g, int b)
     }
 }
 
+// Ajoute un popup de score a la premiere place libre
 void ajouter_popup(PopupScore* tab, int x, int y, int valeur)
 {
     int i;
@@ -219,6 +240,7 @@ void ajouter_popup(PopupScore* tab, int x, int y, int valeur)
     }
 }
 
+// Ajoute un bonus a la premiere place libre
 void ajouter_bonus(Bonus* tab, int x, int y, int type)
 {
     int i;
@@ -236,6 +258,7 @@ void ajouter_bonus(Bonus* tab, int x, int y, int type)
     }
 }
 
+// Ajoute une explosion a la premiere place libre
 void ajouter_explosion(Explosion* tab, int x, int y, int taille)
 {
     int i;
@@ -253,6 +276,7 @@ void ajouter_explosion(Explosion* tab, int x, int y, int taille)
     }
 }
 
+// Ajoute un tir du boss avec une direction aleatoire
 void ajouter_tir_boss(TirBoss* tab, int x, int y)
 {
     int i;
@@ -264,6 +288,7 @@ void ajouter_tir_boss(TirBoss* tab, int x, int y)
             tab[i].y = y;
             tab[i].tx = 35;
             tab[i].ty = 35;
+            // On tire a gauche ou a droite au hasard
             dir = rand() % 2;
             if (dir == 0) {
                 tab[i].vx = -3.0;
@@ -278,6 +303,7 @@ void ajouter_tir_boss(TirBoss* tab, int x, int y)
     }
 }
 
+// Met les valeurs de depart pour le boss
 void init_boss(Boss* b)
 {
     b->x = LARGEUR / 2 - 70;
@@ -295,6 +321,7 @@ void init_boss(Boss* b)
     b->direction = 0;
 }
 
+// Verifie si une bulle touche le joueur (boite de collision rectangulaire)
 int collision_bulle_joueur(Bulle* b, Joueur* j)
 {
     if (b->x <= j->x + j->tx &&
@@ -306,6 +333,7 @@ int collision_bulle_joueur(Bulle* b, Joueur* j)
     return 0;
 }
 
+// Verifie si un tir touche une bulle
 int collision_tir_bulle(Projectile* t, Bulle* b)
 {
     if (t->x <= b->x + b->tx &&
@@ -317,6 +345,7 @@ int collision_tir_bulle(Projectile* t, Bulle* b)
     return 0;
 }
 
+// Verifie si un tir touche le boss
 int collision_tir_boss(Projectile* t, Boss* b)
 {
     if (b->active == 0) return 0;
@@ -329,6 +358,7 @@ int collision_tir_boss(Projectile* t, Boss* b)
     return 0;
 }
 
+// Verifie si le boss touche le joueur
 int collision_boss_joueur(Boss* b, Joueur* j)
 {
     if (b->active == 0) return 0;
@@ -341,6 +371,7 @@ int collision_boss_joueur(Boss* b, Joueur* j)
     return 0;
 }
 
+// Verifie si le joueur ramasse un bonus
 int collision_bonus_joueur(Bonus* b, Joueur* j)
 {
     if (b->active == 0) return 0;
@@ -353,6 +384,7 @@ int collision_bonus_joueur(Bonus* b, Joueur* j)
     return 0;
 }
 
+// Verifie si un tir du boss touche le joueur
 int collision_tirboss_joueur(TirBoss* t, Joueur* j)
 {
     if (t->active == 0) return 0;

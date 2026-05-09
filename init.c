@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+// Definition de toutes les variables globales declarees dans init.h
 BITMAP* page = NULL;
 
 BITMAP* fonds[4];
@@ -30,6 +31,7 @@ BITMAP* boss_d = NULL;
 
 BITMAP* tirboss_img[3];
 
+// Initialise Allegro et la fenetre du jeu
 void init_allegro(void)
 {
     allegro_init();
@@ -39,18 +41,22 @@ void init_allegro(void)
 
     set_color_depth(desktop_color_depth());
 
+    // On ouvre la fenetre, si ca rate on quitte avec un message
     if (set_gfx_mode(GFX_AUTODETECT_WINDOWED, LARGEUR, HAUTEUR, 0, 0) != 0) {
         allegro_message("probleme mode graphique");
         allegro_exit();
         exit(EXIT_FAILURE);
     }
 
+    // On cree le buffer ou on va tout dessiner
     page = create_bitmap(LARGEUR, HAUTEUR);
     clear_bitmap(page);
 
+    // Pour que le rand() donne des valeurs differentes a chaque lancement
     srand((unsigned)time(NULL));
 }
 
+// Met tous les pointeurs d'images a NULL avant de les charger
 static void mettre_zero(void)
 {
     int i;
@@ -84,10 +90,12 @@ static void mettre_zero(void)
 
 }
 
+// Charge toutes les images depuis le dossier images/
 void charger_images(void)
 {
     mettre_zero();
 
+    // Fonds des 4 niveaux
     fonds[0] = load_bitmap("images/fond1.bmp", NULL);
     fonds[1] = load_bitmap("images/fond2.bmp", NULL);
     fonds[2] = load_bitmap("images/fond3.bmp", NULL);
@@ -96,6 +104,7 @@ void charger_images(void)
     img_victoire = load_bitmap("images/victoire.bmp", NULL);
     img_defaite = load_bitmap("images/defaite.bmp", NULL);
 
+    // Animations du joueur
     marche_droite[0] = load_bitmap("images/md0.bmp", NULL);
     marche_droite[1] = load_bitmap("images/md1.bmp", NULL);
     marche_droite[2] = load_bitmap("images/md2.bmp", NULL);
@@ -116,6 +125,7 @@ void charger_images(void)
 
     mort_img = load_bitmap("images/mort.bmp", NULL);
 
+    // On charge les bulles avec sprintf pour generer le nom du fichier
     int n;
     char nom_fichier[50];
     for (n = 0; n < 4; n++) {
@@ -146,7 +156,8 @@ void charger_images(void)
     tirboss_img[1] = load_bitmap("images/tirb1.bmp", NULL);
     tirboss_img[2] = load_bitmap("images/tirb2.bmp", NULL);
 }
-//rtsd
+
+// Petite fonction qui libere une image et met le pointeur a NULL
 static void liberer(BITMAP** b)
 {
     if (*b != NULL) {
@@ -155,6 +166,7 @@ static void liberer(BITMAP** b)
     }
 }
 
+// Libere toutes les images chargees
 void liberer_images(void)
 {
     int i;

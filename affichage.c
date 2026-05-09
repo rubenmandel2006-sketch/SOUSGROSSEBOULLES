@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Affiche un texte centre en grand en l'agrandissant avec stretch_sprite
 static void texte_centre_geant(int x, int y, const char* t, int r, int g, int b, float echelle)
 {
     int largeur_normale = strlen(t) * 8;
@@ -13,6 +14,7 @@ static void texte_centre_geant(int x, int y, const char* t, int r, int g, int b,
     int nouvelle_largeur = (int)(largeur_normale * echelle);
     int nouvelle_hauteur = (int)(hauteur_normale * echelle);
 
+    // On dessine le texte sur un petit bitmap puis on l'etire pour le rendre grand
     BITMAP* temp = create_bitmap(largeur_normale + 2, hauteur_normale + 2);
     clear_to_color(temp, makecol(255, 0, 255));
 
@@ -27,6 +29,7 @@ static void texte_centre_geant(int x, int y, const char* t, int r, int g, int b,
 int g_tick = 0;
 int g_shake = 0;
 
+// Active le shake d'ecran (on garde la plus grande valeur pour pas l'ecraser)
 void declencher_shake(int force)
 {
     if (force > g_shake) {
@@ -34,24 +37,28 @@ void declencher_shake(int force)
     }
 }
 
+// Affiche un texte avec une petite ombre noire derriere
 static void texte_ombre(int x, int y, const char* t, int r, int g, int b)
 {
     textout_ex(page, font, t, x + 2, y + 2, makecol(0, 0, 0), -1);
     textout_ex(page, font, t, x, y, makecol(r, g, b), -1);
 }
 
+// Pareil mais centre
 static void texte_centre_ombre(int x, int y, const char* t, int r, int g, int b)
 {
     textout_centre_ex(page, font, t, x + 2, y + 2, makecol(0, 0, 0), -1);
     textout_centre_ex(page, font, t, x, y, makecol(r, g, b), -1);
 }
 
+// Dessine un degrade de couleurs vertical (pour les ecrans de victoire/defaite)
 static void degrade_vertical(int y1, int y2, int r1, int g1, int b1, int r2, int g2, int b2)
 {
     int y;
     int r, g, b;
     float t;
 
+    // On boucle sur chaque ligne et on calcule la couleur entre les 2 (interpolation)
     for (y = y1; y < y2; y++) {
         t = (float)(y - y1) / (float)(y2 - y1);
         r = (int)(r1 + (r2 - r1) * t);
@@ -61,10 +68,12 @@ static void degrade_vertical(int y1, int y2, int r1, int g1, int b1, int r2, int
     }
 }
 
+// Dessine le fond en gardant le bon ratio (pour eviter de deformer l'image)
 static void dessiner_fond_proportionnel(BITMAP* bmp)
 {
     float ratio_w = (float)LARGEUR / bmp->w;
     float ratio_h = (float)HAUTEUR / bmp->h;
+    // On prend le plus grand des 2 pour bien remplir l'ecran
     float ratio = (ratio_w > ratio_h) ? ratio_w : ratio_h;
     int new_w = bmp->w * ratio;
     int new_h = bmp->h * ratio;
@@ -73,6 +82,7 @@ static void dessiner_fond_proportionnel(BITMAP* bmp)
     stretch_blit(bmp, page, 0, 0, bmp->w, bmp->h, offset_x, offset_y, new_w, new_h);
 }
 
+// Affiche le fond du niveau, les etoiles qui clignotent et le sol
 void afficher_fond(int niveau, Etoile* etoiles)
 {
     int i;
@@ -85,6 +95,7 @@ void afficher_fond(int niveau, Etoile* etoiles)
 
     dessiner_fond_proportionnel(fonds[idx]);
 
+    // On boucle sur les etoiles pour les faire clignoter avec un sin
     for (i = 0; i < MAX_ETOILES; i++) {
         br = 150 + (int)(105 * sin((g_tick + etoiles[i].phase * 5) * 0.05));
         if (br < 100) br = 100;
@@ -92,17 +103,21 @@ void afficher_fond(int niveau, Etoile* etoiles)
         circlefill(page, etoiles[i].x, etoiles[i].y, etoiles[i].taille, makecol(br, br, br));
     }
 
+    // Petite barre de sol en bas
     rectfill(page, 0, SOL, LARGEUR, SOL + 6, makecol(30, 30, 50));
     rectfill(page, 0, SOL + 6, LARGEUR, BAS_HUD, makecol(50, 30, 70));
 }
 
+// Affiche le joueur en choisissant le bon sprite selon ce qu'il fait
 void afficher_joueur(Joueur* j)
 {
     BITMAP* sprite;
     sprite = NULL;
+    // Effet clignotement quand on est invincible (1 frame sur 2)
     if (j->invincibilite > 0 && (g_tick / 5) % 2 == 0) {
         return;
     }
+    // Si on tire, on prend la pose de tir
     if (key[KEY_Q] || key[KEY_W] || key[KEY_X]) {
         if (j->direction == 0) {
             sprite = saut_droite[0];
@@ -110,12 +125,14 @@ void afficher_joueur(Joueur* j)
             sprite = saut_gauche[0];
         }
     }
+    // Si on saute, animation de saut
     else if (j->saut == 1) {
         if (j->direction == 0) {
             sprite = saut_droite[j->frame % 2];
         } else {
             sprite = saut_gauche[j->frame % 2];
         }
+    // Sinon animation de marche normale
     } else {
         if (j->direction == 0) {
             sprite = marche_droite[j->frame];
@@ -127,21 +144,25 @@ void afficher_joueur(Joueur* j)
     if (sprite != NULL) {
         stretch_sprite(page, sprite, j->x, j->y, j->tx, j->ty);
     } else {
+        // Si l'image est pas chargee on dessine un rectangle a la place
         rectfill(page, j->x, j->y, j->x + j->tx, j->y + j->ty, makecol(80, 180, 220));
     }
 }
 
+// Affiche le joueur quand il est mort
 void afficher_mort(Joueur* j)
 {
     if (mort_img != NULL) {
         stretch_sprite(page, mort_img, j->x, j->y, j->tx, j->ty);
     } else {
+        // Plan B si l'image est pas chargee : un rectangle rouge avec une croix
         rectfill(page, j->x, j->y, j->x + j->tx, j->y + j->ty, makecol(180, 30, 30));
         line(page, j->x, j->y, j->x + j->tx, j->y + j->ty, makecol(255, 255, 255));
         line(page, j->x + j->tx, j->y, j->x, j->y + j->ty, makecol(255, 255, 255));
     }
 }
 
+// Affiche toutes les bulles actives
 void afficher_bulles(Bulle* b, int niveau)
 {
     int i;
@@ -151,6 +172,7 @@ void afficher_bulles(Bulle* b, int niveau)
     if(idx_niv < 0) idx_niv = 0;
     if(idx_niv > 3) idx_niv = 3;
 
+    // On boucle sur les bulles pour afficher celles qui sont actives
     for (i = 0; i < MAX_BULLES; i++) {
         if (b[i].active == 1) {
             stretch_sprite(page, bulles_img[idx_niv][b[i].taille], (int)b[i].x, (int)b[i].y, b[i].tx, b[i].ty);
@@ -158,6 +180,7 @@ void afficher_bulles(Bulle* b, int niveau)
         }
     }
 }
+// Affiche tous les tirs actifs
 void afficher_tirs(Projectile* t)
 {
     int i;
@@ -170,6 +193,7 @@ void afficher_tirs(Projectile* t)
 }
 
 
+// Affiche les popups de score (couleur differente selon le nombre de points)
 void afficher_popups(PopupScore* p)
 {
     int i;
@@ -177,6 +201,7 @@ void afficher_popups(PopupScore* p)
     for (i = 0; i < MAX_POPUPS; i++) {
         if (p[i].active == 1) {
             sprintf(texte, "+%d", p[i].valeur);
+            // Plus on gagne de points, plus la couleur change
             if (p[i].valeur >= 200) {
                 texte_centre_ombre(p[i].x, p[i].y, texte, 255, 100, 200);
             } else if (p[i].valeur >= 100) {
@@ -188,6 +213,7 @@ void afficher_popups(PopupScore* p)
     }
 }
 
+// Affiche le boss (avec le sprite gauche ou droite selon sa direction)
 void afficher_boss(Boss* b)
 {
     BITMAP* sprite;
@@ -211,6 +237,7 @@ void afficher_boss(Boss* b)
 
 }
 
+// Affiche tous les bonus qui tombent
 void afficher_bonus(Bonus* b)
 {
     int i;
@@ -218,6 +245,7 @@ void afficher_bonus(Bonus* b)
     for (i = 0; i < MAX_BONUS; i++) {
         if (b[i].active == 1) {
             idx = b[i].type;
+            // Securite : on borne idx pour pas sortir du tableau
             if (idx < 0) idx = 0;
             if (idx > 2) idx = 2;
             if (bonus_img[idx] != NULL) {
@@ -227,6 +255,7 @@ void afficher_bonus(Bonus* b)
     }
 }
 
+// Affiche les explosions en cours d'animation
 void afficher_explosions(Explosion* e)
 {
     int i;
@@ -243,6 +272,7 @@ void afficher_explosions(Explosion* e)
     }
 }
 
+// Affiche les tirs du boss
 void afficher_tirs_boss(TirBoss* t)
 {
     int i;
@@ -257,6 +287,7 @@ void afficher_tirs_boss(TirBoss* t)
     }
 }
 
+// Affiche la barre de vie du boss en haut au milieu
 void afficher_barre_boss(Boss* b)
 {
     int largeur_barre;
@@ -264,11 +295,13 @@ void afficher_barre_boss(Boss* b)
 
     if (b->active == 0) return;
 
+    // Largeur de la barre proportionnelle a la vie restante
     largeur_barre = (b->vie * 300) / b->vie_max;
 
     x1 = LARGEUR / 2 - 150;
     y1 = HAUT_HUD + 5;
 
+    // Fond noir + zone vide grise + zone de vie en vert
     rectfill(page, x1 - 2, y1 - 2, x1 + 302, y1 + 16, makecol(0, 0, 0));
     rectfill(page, x1, y1, x1 + 300, y1 + 14, makecol(60, 60, 60));
 
@@ -280,12 +313,14 @@ void afficher_barre_boss(Boss* b)
     texte_centre_ombre(LARGEUR / 2, y1 + 18, "BOSS", 0, 128, 0);
 }
 
+// Affiche le HUD : pseudo, niveau, score, combo, barre de temps, commandes
 void afficher_hud(char* pseudo, int score, int temps, int niveau, int combo)
 {
     char texte[100];
     int largeur_temps;
     int couleur_temps_r, couleur_temps_g, couleur_temps_b;
 
+    // Bandeau du haut
     rectfill(page, 0, 0, LARGEUR, HAUT_HUD, makecol(15, 15, 30));
     rectfill(page, 0, HAUT_HUD - 4, LARGEUR, HAUT_HUD, makecol(80, 100, 200));
 
@@ -303,10 +338,12 @@ void afficher_hud(char* pseudo, int score, int temps, int niveau, int combo)
         texte_centre_ombre(LARGEUR / 2, 40, texte, 255, 100, 50);
     }
 
+    // Barre de temps : largeur proportionnelle au temps restant
     largeur_temps = temps * 200 / 60;
     if (largeur_temps < 0) largeur_temps = 0;
     if (largeur_temps > 200) largeur_temps = 200;
 
+    // Couleur de la barre de temps (vert > jaune > rouge)
     if (temps > 30) {
         couleur_temps_r = 50; couleur_temps_g = 220; couleur_temps_b = 50;
     } else if (temps > 15) {
@@ -323,6 +360,7 @@ void afficher_hud(char* pseudo, int score, int temps, int niveau, int combo)
     sprintf(texte, "TEMPS %02d", temps);
     texte_ombre(LARGEUR - 220, 5, texte, 255, 255, 255);
 
+    // Bandeau du bas avec les commandes
     rectfill(page, 0, BAS_HUD, LARGEUR, HAUTEUR, makecol(15, 15, 30));
     rectfill(page, 0, BAS_HUD, LARGEUR, BAS_HUD + 4, makecol(80, 100, 200));
     texte_centre_ombre(LARGEUR / 2, BAS_HUD + 18,
@@ -330,12 +368,14 @@ void afficher_hud(char* pseudo, int score, int temps, int niveau, int combo)
                        200, 200, 220);
 }
 
+// Copie le buffer page sur l'ecran (avec ou sans shake)
 void afficher_ecran(void)
 {
     int dx, dy;
 
     g_tick = g_tick + 1;
 
+    // Si on a un shake en cours, on decale l'affichage de quelques pixels au hasard
     if (g_shake > 0) {
         dx = (rand() % (g_shake * 2 + 1)) - g_shake;
         dy = (rand() % (g_shake * 2 + 1)) - g_shake;
@@ -347,12 +387,14 @@ void afficher_ecran(void)
     }
 }
 
+// Ecran de victoire avec degrade vert
 void afficher_victoire(int score)
 {
     char texte[100];
     int sortir;
 
     sortir = 0;
+    // On attend que la touche entree soit relachee (sinon on sort tout de suite)
     while (key[KEY_ENTER]) { rest(10); }
 
     while (sortir == 0) {
@@ -376,6 +418,7 @@ void afficher_victoire(int score)
     while (key[KEY_ENTER]) { rest(10); }
 }
 
+// Ecran de defaite avec degrade rouge
 void afficher_defaite(int score)
 {
     char texte[100];
@@ -405,6 +448,7 @@ void afficher_defaite(int score)
     while (key[KEY_ENTER]) { rest(10); }
 }
 
+// Affiche un grand chiffre du decompte au milieu de l'ecran
 void afficher_decompte(int chiffre)
 {
     char texte[10];

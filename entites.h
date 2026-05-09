@@ -16,7 +16,7 @@
 #define MAX_PARTICULES 250
 #define MAX_POPUPS     20
 #define MAX_ETOILES    80
-#define MAX_BONUS      10
+#define MAX_BONUS      1
 #define MAX_EXPLOSIONS 25
 #define MAX_TIRS_BOSS  15
 
@@ -32,6 +32,7 @@ typedef struct {
     int mort;
     int bonus_type;
     int bonus_timer;
+    int invincibilite;
 } Joueur;
 
 typedef struct {

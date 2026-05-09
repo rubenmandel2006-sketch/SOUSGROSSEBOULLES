@@ -8,7 +8,7 @@ void init_joueur(Joueur* j)
     j->y = SOL - 140;
     j->tx = 100;
     j->ty = 140;
-    j->vie = 1;
+    j->vie = 3;
     j->direction = 0;
     j->saut = 0;
     j->vy = 0;
@@ -17,6 +17,7 @@ void init_joueur(Joueur* j)
     j->mort = 0;
     j->bonus_type = 0;
     j->bonus_timer = 0;
+    j->invincibilite = 0;
 }
 
 Bulle* creer_bulles(void)
@@ -228,7 +229,7 @@ void ajouter_bonus(Bonus* tab, int x, int y, int type)
             tab[i].y = y;
             tab[i].tx = 50;
             tab[i].ty = 50;
-            tab[i].vy = 2.0;
+            tab[i].vy = 12.0;
             tab[i].type = type;
             return;
         }

@@ -33,16 +33,16 @@ void init_bulles_niveau(Bulle* b, int niveau)
     }
 
     if (niveau == 1) {
-        nb_meteores = 2;
+        nb_meteores = 8;
         espacement_y = 500;
     }
     else if (niveau == 2) {
-        nb_meteores = 3;
+        nb_meteores = 10;
         espacement_y = 400;
     }
     else if (niveau == 3) {
-        nb_meteores = 4;
-        espacement_y = 300;
+        nb_meteores = 25;
+        espacement_y = 380;
     }
 
     for (i = 0; i < nb_meteores; i++) {
@@ -281,12 +281,16 @@ void gerer_collisions(Projectile* t, Bulle* b, Particule* part,
                         declencher_shake(2);
 
                         if (rand() % 6 == 0) {
-                            ajouter_bonus(bons, x - 25, y, rand() % 3);
+                            ajouter_bonus(bons, x - 25, y, rand() % 2);
                         }
 
-                        if (taille > 0) {
-                            ajouter_bulle(b, x - 10, y, taille - 1, 0, couleur);
-                            ajouter_bulle(b, x + 10, y, taille - 1, 1, couleur);
+                        if (taille == 2) {
+                            ajouter_bulle(b, x - 10, y, 1, 0, couleur);
+                            ajouter_bulle(b, x + 10, y, 1, 1, couleur);
+                        } else if (taille == 1) {
+                            ajouter_bulle(b, x - 15, y, 0, 0, couleur);
+                            ajouter_bulle(b, x, y - 10, 0, rand() % 2, couleur);
+                            ajouter_bulle(b, x + 15, y, 0, 1, couleur);
                         }
 
                         break;
@@ -473,10 +477,12 @@ int jouer_niveau(char* pseudo, int niveau, int* score)
                 joueur.bonus_type = 0;
             }
         }
-
+        if (joueur.invincibilite > 0) {
+            joueur.invincibilite = joueur.invincibilite - 1;
+        }
         compteur_bonus = compteur_bonus + 1;
         if (compteur_bonus > 240 && rand() % 60 == 0) {
-            ajouter_bonus(bons, rand() % (LARGEUR - 50), 0, rand() % 3);
+            ajouter_bonus(bons, rand() % (LARGEUR - 50), 0, rand() % 2);
             compteur_bonus = 0;
         }
 
@@ -488,11 +494,17 @@ int jouer_niveau(char* pseudo, int niveau, int* score)
 
         for (i = 0; i < MAX_BULLES; i++) {
             if (bulles[i].active == 1) {
-                if (collision_bulle_joueur(&bulles[i], &joueur) == 1) {
-                    perdu = 1;
+                if (collision_bulle_joueur(&bulles[i], &joueur) == 1 && joueur.invincibilite == 0) {
+                    joueur.vie = joueur.vie - 1;
+                    joueur.invincibilite = 90;
+
                     declencher_shake(10);
                     exploser_particules(particules, joueur.x + joueur.tx / 2,
                                         joueur.y + joueur.ty / 2, 255, 80, 80);
+
+                    if (joueur.vie <= 0) {
+                        perdu = 1;
+                    }
                 }
             }
         }
@@ -528,6 +540,7 @@ int jouer_niveau(char* pseudo, int niveau, int* score)
     }
 
     if (gagne == 1) {
+        joueur.invincibilite = 0;
         bonus_temps = temps * 50;
         *score = *score + bonus_temps;
 
@@ -649,7 +662,7 @@ int jouer_boss(char* pseudo, int* score)
 
         compteur_bonus = compteur_bonus + 1;
         if (compteur_bonus > 240 && rand() % 60 == 0) {
-            ajouter_bonus(bons, rand() % (LARGEUR - 50), 0, rand() % 3);
+            ajouter_bonus(bons, rand() % (LARGEUR - 50), 0, rand() % 2);
             compteur_bonus = 0;
         }
 

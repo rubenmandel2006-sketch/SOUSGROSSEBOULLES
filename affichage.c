@@ -83,19 +83,7 @@ void afficher_fond(int niveau, Etoile* etoiles)
     if (idx < 0) idx = 0;
     if (idx > 3) idx = 3;
 
-    if (fonds[idx] != NULL) {
-        dessiner_fond_proportionnel(fonds[idx]);
-    } else {
-        if (niveau == 1) {
-            degrade_vertical(0, HAUTEUR, 30, 60, 130, 80, 180, 220);
-        } else if (niveau == 2) {
-            degrade_vertical(0, HAUTEUR, 70, 30, 100, 220, 100, 60);
-        } else if (niveau == 3) {
-            degrade_vertical(0, HAUTEUR, 20, 30, 70, 100, 60, 200);
-        } else {
-            degrade_vertical(0, HAUTEUR, 60, 10, 30, 130, 30, 50);
-        }
-    }
+    dessiner_fond_proportionnel(fonds[idx]);
 
     for (i = 0; i < MAX_ETOILES; i++) {
         br = 150 + (int)(105 * sin((g_tick + etoiles[i].phase * 5) * 0.05));
@@ -112,7 +100,9 @@ void afficher_joueur(Joueur* j)
 {
     BITMAP* sprite;
     sprite = NULL;
-
+    if (j->invincibilite > 0 && (g_tick / 5) % 2 == 0) {
+        return;
+    }
     if (key[KEY_Q] || key[KEY_W] || key[KEY_X]) {
         if (j->direction == 0) {
             sprite = saut_droite[0];
@@ -163,23 +153,8 @@ void afficher_bulles(Bulle* b, int niveau)
 
     for (i = 0; i < MAX_BULLES; i++) {
         if (b[i].active == 1) {
-            if (bulles_img[idx_niv][b[i].taille] != NULL) {
-                stretch_sprite(page, bulles_img[idx_niv][b[i].taille], (int)b[i].x, (int)b[i].y, b[i].tx, b[i].ty);
-            } else {
-                x = (int)b[i].x + b[i].tx / 2;
-                y = (int)b[i].y + b[i].ty / 2;
-                r = b[i].tx / 2;
+            stretch_sprite(page, bulles_img[idx_niv][b[i].taille], (int)b[i].x, (int)b[i].y, b[i].tx, b[i].ty);
 
-                if (b[i].couleur == 0) { cr = 230; cg = 80;  cb = 80;  }
-                else if (b[i].couleur == 1) { cr = 80;  cg = 200; cb = 90;  }
-                else if (b[i].couleur == 2) { cr = 80;  cg = 130; cb = 230; }
-                else { cr = 230; cg = 200; cb = 60; }
-
-                circlefill(page, x + 3, y + 3, r, makecol(0, 0, 0));
-                circlefill(page, x, y, r, makecol(cr, cg, cb));
-                circle(page, x, y, r, makecol(255, 255, 255));
-                circlefill(page, x - r / 3, y - r / 3, r / 4, makecol(255, 255, 255));
-            }
         }
     }
 }
@@ -189,14 +164,7 @@ void afficher_tirs(Projectile* t)
     int cx;
     for (i = 0; i < MAX_TIRS; i++) {
         if (t[i].active == 1) {
-            if (tir_img[t[i].frame] != NULL) {
-                stretch_sprite(page, tir_img[t[i].frame], t[i].x, t[i].y, t[i].tx, t[i].ty);
-            } else {
-                cx = t[i].x + t[i].tx / 2;
-                rectfill(page, cx - 1, t[i].y, cx + 1, t[i].y + t[i].ty + 6, makecol(255, 255, 0));
-                rectfill(page, t[i].x, t[i].y, t[i].x + t[i].tx, t[i].y + t[i].ty, makecol(255, 200, 0));
-                circlefill(page, cx, t[i].y, t[i].tx / 2, makecol(255, 255, 200));
-            }
+            stretch_sprite(page, tir_img[t[i].frame], t[i].x, t[i].y, t[i].tx, t[i].ty);
         }
     }
 }
@@ -239,20 +207,8 @@ void afficher_boss(Boss* b)
     } else {
         sprite = boss_d;
     }
+    stretch_sprite(page, sprite, (int)b->x, (int)b->y, b->tx, b->ty);
 
-    if (sprite != NULL) {
-        stretch_sprite(page, sprite, (int)b->x, (int)b->y, b->tx, b->ty);
-    } else {
-        circlefill(page, cx + 4, cy + 4, b->tx / 2, makecol(0, 0, 0));
-        circlefill(page, cx, cy, b->tx / 2, makecol(120 + rouge, 30, 150 - rouge));
-        circle(page, cx, cy, b->tx / 2, makecol(255, 200, 255));
-        circlefill(page, cx - 25, cy - 10, 12, makecol(255, 255, 255));
-        circlefill(page, cx + 25, cy - 10, 12, makecol(255, 255, 255));
-        circlefill(page, cx - 25, cy - 10, 6, makecol(0, 0, 0));
-        circlefill(page, cx + 25, cy - 10, 6, makecol(0, 0, 0));
-        line(page, cx - 18, cy + 18, cx, cy + 10, makecol(0, 0, 0));
-        line(page, cx, cy + 10, cx + 18, cy + 18, makecol(0, 0, 0));
-    }
 }
 
 void afficher_bonus(Bonus* b)
@@ -266,17 +222,6 @@ void afficher_bonus(Bonus* b)
             if (idx > 2) idx = 2;
             if (bonus_img[idx] != NULL) {
                 stretch_sprite(page, bonus_img[idx], (int)b[i].x, (int)b[i].y, b[i].tx, b[i].ty);
-            } else {
-                if (idx == 0) {
-                    rectfill(page, (int)b[i].x, (int)b[i].y, (int)b[i].x + b[i].tx, (int)b[i].y + b[i].ty, makecol(50, 200, 80));
-                    textout_centre_ex(page, font, "x2", (int)b[i].x + b[i].tx/2, (int)b[i].y + b[i].ty/2 - 4, makecol(255, 255, 255), -1);
-                } else if (idx == 1) {
-                    rectfill(page, (int)b[i].x, (int)b[i].y, (int)b[i].x + b[i].tx, (int)b[i].y + b[i].ty, makecol(50, 80, 230));
-                    textout_centre_ex(page, font, "x3", (int)b[i].x + b[i].tx/2, (int)b[i].y + b[i].ty/2 - 4, makecol(255, 255, 255), -1);
-                } else {
-                    rectfill(page, (int)b[i].x, (int)b[i].y, (int)b[i].x + b[i].tx, (int)b[i].y + b[i].ty, makecol(230, 80, 50));
-                    textout_centre_ex(page, font, "BOOM", (int)b[i].x + b[i].tx/2, (int)b[i].y + b[i].ty/2 - 4, makecol(255, 255, 255), -1);
-                }
             }
         }
     }
@@ -291,11 +236,9 @@ void afficher_explosions(Explosion* e)
             idx = e[i].frame;
             if (idx < 0) idx = 0;
             if (idx > 2) idx = 2;
-            if (explosion_img[idx] != NULL) {
-                stretch_sprite(page, explosion_img[idx], e[i].x, e[i].y, e[i].tx, e[i].ty);
-            } else {
-                circlefill(page, e[i].x + e[i].tx / 2, e[i].y + e[i].ty / 2, e[i].tx / 2 - idx * 5, makecol(255, 150 + idx * 30, 50));
-            }
+            stretch_sprite(page, explosion_img[idx], e[i].x, e[i].y, e[i].tx, e[i].ty);
+
+
         }
     }
 }
@@ -309,13 +252,8 @@ void afficher_tirs_boss(TirBoss* t)
             idx = t[i].frame;
             if (idx < 0) idx = 0;
             if (idx > 2) idx = 2;
-            if (tirboss_img[idx] != NULL) {
-                stretch_sprite(page, tirboss_img[idx], (int)t[i].x, (int)t[i].y, t[i].tx, t[i].ty);
-            } else {
-                circlefill(page, (int)t[i].x + t[i].tx / 2, (int)t[i].y + t[i].ty / 2, t[i].tx / 2, makecol(255, 100, 50));
-                circle(page, (int)t[i].x + t[i].tx / 2, (int)t[i].y + t[i].ty / 2, t[i].tx / 2, makecol(255, 255, 0));
+            stretch_sprite(page, tirboss_img[idx], (int)t[i].x, (int)t[i].y, t[i].tx, t[i].ty);
             }
-        }
     }
 }
 
@@ -335,11 +273,11 @@ void afficher_barre_boss(Boss* b)
     rectfill(page, x1, y1, x1 + 300, y1 + 14, makecol(60, 60, 60));
 
     if (largeur_barre > 0) {
-        rectfill(page, x1, y1, x1 + largeur_barre, y1 + 14, makecol(220, 30, 30));
+        rectfill(page, x1, y1, x1 + largeur_barre, y1 + 14, makecol(0, 128, 0));
     }
     rect(page, x1 - 1, y1 - 1, x1 + 301, y1 + 15, makecol(255, 255, 255));
 
-    texte_centre_ombre(LARGEUR / 2, y1 + 18, "BOSS", 255, 200, 200);
+    texte_centre_ombre(LARGEUR / 2, y1 + 18, "BOSS", 0, 128, 0);
 }
 
 void afficher_hud(char* pseudo, int score, int temps, int niveau, int combo)
@@ -442,7 +380,7 @@ void afficher_defaite(int score)
 {
     char texte[100];
     int sortir;
-//zderyujki
+
     sortir = 0;
     while (key[KEY_ENTER]) { rest(10); }
 

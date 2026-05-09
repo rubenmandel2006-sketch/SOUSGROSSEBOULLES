@@ -11,7 +11,7 @@ void declencher_shake(int force);
 
 void afficher_fond(int niveau, Etoile* etoiles);
 void afficher_joueur(Joueur* j);
-void afficher_bulles(Bulle* b);
+void afficher_bulles(Bulle* b, int niveau);
 void afficher_tirs(Projectile* t);
 void afficher_particules(Particule* p);
 void afficher_popups(PopupScore* p);

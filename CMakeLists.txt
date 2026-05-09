@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 4.1)
-project(SOUSGROSSESBULLES C)
+project(SOUSGROSSEBOULLES C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(SOUSGROSSESBULLES main.c
+add_executable(SOUSGROSSEBOULLES main.c
         jeu.c
         jeu.h
         sauvegarde.c
@@ -19,4 +19,4 @@ add_executable(SOUSGROSSESBULLES main.c
         main.c
         menu.c
         menu.h)
-target_link_libraries(SOUSGROSSESBULLES -lmingw32 -lalleg44)
+target_link_libraries(SOUSGROSSEBOULLES -lmingw32 -lalleg44)

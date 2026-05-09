@@ -152,16 +152,19 @@ void afficher_mort(Joueur* j)
     }
 }
 
-void afficher_bulles(Bulle* b)
+void afficher_bulles(Bulle* b, int niveau)
 {
     int i;
     int x, y, r;
     int cr, cg, cb;
+    int idx_niv = niveau - 1;
+    if(idx_niv < 0) idx_niv = 0;
+    if(idx_niv > 3) idx_niv = 3;
 
     for (i = 0; i < MAX_BULLES; i++) {
         if (b[i].active == 1) {
-            if (bulles_img[b[i].taille] != NULL) {
-                stretch_sprite(page, bulles_img[b[i].taille], (int)b[i].x, (int)b[i].y, b[i].tx, b[i].ty);
+            if (bulles_img[idx_niv][b[i].taille] != NULL) {
+                stretch_sprite(page, bulles_img[idx_niv][b[i].taille], (int)b[i].x, (int)b[i].y, b[i].tx, b[i].ty);
             } else {
                 x = (int)b[i].x + b[i].tx / 2;
                 y = (int)b[i].y + b[i].ty / 2;
@@ -180,7 +183,6 @@ void afficher_bulles(Bulle* b)
         }
     }
 }
-
 void afficher_tirs(Projectile* t)
 {
     int i;

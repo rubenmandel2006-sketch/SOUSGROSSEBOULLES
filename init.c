@@ -1,6 +1,7 @@
 #include "init.h"
 #include <time.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 BITMAP* page = NULL;
 
@@ -16,7 +17,7 @@ BITMAP* saut_droite[2];
 BITMAP* saut_gauche[2];
 BITMAP* mort_img = NULL;
 
-BITMAP* bulles_img[3];
+BITMAP* bulles_img[4][3];
 
 BITMAP* tir_img[3];
 
@@ -65,7 +66,12 @@ static void mettre_zero(void)
         marche_droite[i] = NULL;
         marche_gauche[i] = NULL;
         saut_haut[i] = NULL;
-        bulles_img[i] = NULL;
+        int j;
+        for (i = 0; i < 4; i++) {
+            for (j = 0; j < 3; j++) {
+                bulles_img[i][j] = NULL;
+            }
+        }
         tir_img[i] = NULL;
         explosion_img[i] = NULL;
         bonus_img[i] = NULL;
@@ -75,6 +81,7 @@ static void mettre_zero(void)
         saut_droite[i] = NULL;
         saut_gauche[i] = NULL;
     }
+
 }
 
 void charger_images(void)
@@ -109,9 +116,16 @@ void charger_images(void)
 
     mort_img = load_bitmap("images/mort.bmp", NULL);
 
-    bulles_img[0] = load_bitmap("images/bulle_p.bmp", NULL);
-    bulles_img[1] = load_bitmap("images/bulle_m.bmp", NULL);
-    bulles_img[2] = load_bitmap("images/bulle_g.bmp", NULL);
+    int n;
+    char nom_fichier[50];
+    for (n = 0; n < 4; n++) {
+        sprintf(nom_fichier, "images/bulle_p%d.bmp", n + 1);
+        bulles_img[n][0] = load_bitmap(nom_fichier, NULL);
+        sprintf(nom_fichier, "images/bulle_m%d.bmp", n + 1);
+        bulles_img[n][1] = load_bitmap(nom_fichier, NULL);
+        sprintf(nom_fichier, "images/bulle_g%d.bmp", n + 1);
+        bulles_img[n][2] = load_bitmap(nom_fichier, NULL);
+    }
 
     tir_img[0] = load_bitmap("images/tir0.bmp", NULL);
     tir_img[1] = load_bitmap("images/tir1.bmp", NULL);
@@ -158,7 +172,10 @@ void liberer_images(void)
         liberer(&marche_droite[i]);
         liberer(&marche_gauche[i]);
         liberer(&saut_haut[i]);
-        liberer(&bulles_img[i]);
+        int j;
+        for (i = 0; i < 4; i++) {
+            for (j = 0; j < 3; j++) liberer(&bulles_img[i][j]);
+        }
         liberer(&tir_img[i]);
         liberer(&explosion_img[i]);
         liberer(&bonus_img[i]);

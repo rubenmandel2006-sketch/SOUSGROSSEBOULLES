@@ -385,10 +385,10 @@ static void sequence_mort(Joueur* j, int niveau, char* pseudo, int score, int te
     for (i = 0; i < 150; i++) {
         afficher_fond(niveau, etoiles);
         if (est_boss == 1) {
-            afficher_bulles(bulles);
+            afficher_bulles(bulles, niveau);
             afficher_boss(boss);
         } else {
-            afficher_bulles(bulles);
+            afficher_bulles(bulles, niveau);
         }
         afficher_mort(j);
         afficher_hud(pseudo, score, temps, niveau, 0);
@@ -444,7 +444,7 @@ int jouer_niveau(char* pseudo, int niveau, int* score)
         afficher_fond(niveau, etoiles);
         afficher_hud(pseudo, *score, temps, niveau, 1);
         afficher_joueur(&joueur);
-        afficher_bulles(bulles);
+        afficher_bulles(bulles, niveau);
         afficher_decompte(i);
         afficher_ecran();
         rest(700);
@@ -511,7 +511,7 @@ int jouer_niveau(char* pseudo, int niveau, int* score)
         }
 
         afficher_fond(niveau, etoiles);
-        afficher_bulles(bulles);
+        afficher_bulles(bulles, niveau);
         afficher_bonus(bons);
         afficher_tirs(tirs);
         afficher_explosions(explos);
@@ -727,7 +727,7 @@ int jouer_boss(char* pseudo, int* score)
         }
 
         afficher_fond(4, etoiles);
-        afficher_bulles(bulles);
+        afficher_bulles(bulles, 4);
         afficher_bonus(bons);
         afficher_tirs(tirs);
         afficher_tirs_boss(tirs_boss);

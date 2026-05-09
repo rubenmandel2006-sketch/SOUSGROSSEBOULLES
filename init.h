@@ -18,7 +18,7 @@ extern BITMAP* saut_droite[2];
 extern BITMAP* saut_gauche[2];
 extern BITMAP* mort_img;
 
-extern BITMAP* bulles_img[3];
+extern BITMAP* bulles_img[4][3];
 
 extern BITMAP* tir_img[3];
 
